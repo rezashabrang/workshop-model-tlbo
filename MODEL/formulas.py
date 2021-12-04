@@ -186,3 +186,24 @@ def generate_energy(m):
     for k in range(1, m + 1):
         energy_dict[k] = random_energy[k]
     return energy_dict
+
+
+def generate_TB(
+        O,
+        Energy,
+        Pidle,
+        m
+):
+    """
+
+    :param O:
+    :param Energy:
+    :param Pidle:
+    :param m:
+    :return:
+    """
+    TB_dict = {}
+    for k in range(1, m + 1):
+        TB_dict[k] = max(O[k], Energy[k] / Pidle[k])
+
+    return TB_dict
