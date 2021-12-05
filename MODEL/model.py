@@ -2,6 +2,7 @@ from formulas import (
     create_energy_cost_matrix,
     create_energy_time_matrix,
     create_setup_matrix,
+    create_trans_matrix,
     generate_TB,
     generate_O,
     generate_r,
@@ -52,6 +53,9 @@ O = generate_O(m)
 
 # TB(k)
 TB = generate_TB(O, energy, pidle, m)
+
+# Transportation Matrix
+trans = create_trans_matrix(n, m)
 
 # Big M
 M = 100
@@ -410,20 +414,85 @@ def EQ_25(
 
     return True
 
-def EQ_26():
-    pass
+
+# def EQ_26(
+#         B: dict
+# ):
+#     global n
+#     global r
+#     res_B = 0
+#     for i in range(1, n + 1):
+#         res_B += B[i][1]
+#     if res_B >
 
 
-def EQ_27():
-    pass
+def EQ_27(
+        EE: dict,
+        B: dict,
+        X: dict
+):
+    global n
+    global S_i
+    global m
+    global trans
+    for i in range(1, n + 1):
+        for j in range(1, S_i[i]):
+            for k in range(1, m + 1):
+                for k_prime in range(1, m + 1):
+                    if EE[i][j] + trans[i][k][k_prime] <= B[i + 1][j] - Pt[i][j][k] + M * (1 - X[i][j][k][k_prime]):
+                        continue
+                    else:
+                        return False
+
+    return True
 
 
-def EQ_28():
-    pass
+def EQ_28(
+        B: dict,
+        S: dict
+):
+    global n
+    global S_i
+    global m
+    global p_k
+    for i in range(1, n + 1):
+        for j in range(1, S_i[i] + 1):
+            for k in range(1, m + 1):
+                for t in range(1, p_k[k] + 1):
+                    if B[i][j] >= 0 and S[k][t] >= 0:
+                        continue
+                    else:
+                        return False
+
+    return True
 
 
-def check_all_constraints():
-    if EQ_9() and EQ_11() and EQ_12() and EQ_15() and EQ_16() and EQ_17() and EQ_18() and EQ_19() and EQ_20() and EQ_21() and EQ_22() and EQ_23() and EQ_24() and EQ_25() and EQ_26() and EQ_27() and EQ_28():
+def check_all_constraints(
+        X: dict,
+        Y: dict,
+        Z: dict,
+        B: dict,
+        S: dict,
+        F: dict,
+        EE: dict,
+        C_max: int
+):
+    if EQ_9(X) and \
+            EQ_11(X, Y) and \
+            EQ_12(Y, X) and \
+            EQ_15(Y) and \
+            EQ_16(Y) and \
+            EQ_17(EE, B, X) and \
+            EQ_18(F, S, Y) and \
+            EQ_19(S, B, Y) and \
+            EQ_20(S, B, Y) and \
+            EQ_21(S, F, Z) and \
+            EQ_22(S, F, Z) and \
+            EQ_23(F, S) and \
+            EQ_24(EE, B) and \
+            EQ_25(EE, C_max) and \
+            EQ_27(EE, B, X) and \
+            EQ_28(B, S):
         return True
 
     return False
