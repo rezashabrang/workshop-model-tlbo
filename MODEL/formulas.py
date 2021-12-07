@@ -1,6 +1,8 @@
 import pandas as pd
 from numpy.random import randint
-
+from pathlib import Path
+import os
+os.chdir(Path(__file__).parent)
 
 def create_base_3d_matrix(i, j, k):
     matrix = {}
@@ -57,7 +59,6 @@ def create_energy_time_matrix(
     """
     # Creating base dictionary
     Pt_i_j_k = create_energy_cost_matrix(n, S_i, p_k)
-
     Pt_df = pd.read_excel('glob_tables/Pt.xlsx')
     # Number of works
     n_works = len(Pt_df.columns) - 1

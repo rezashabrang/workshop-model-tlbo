@@ -170,7 +170,7 @@ def EQ_12(
     global n
     global S_i
     res_y = 0
-    res_x = 0
+    res_y_prime = 0
     for k in range(1, m + 1):
         for t in range(1, p_k[k]):
 
@@ -179,15 +179,15 @@ def EQ_12(
                 for j in range(1, S_i[i] + 1):
                     res_y += Y[i][j][k][t]
 
-            # X part
+            # Y_prime part
             for i_prime in range(1, n + 1):
                 for j_prime in range(1, S_i[i_prime] + 1):
-                    res_x += X[i_prime][j_prime][k][t + 1]
+                    res_y_prime += Y[i_prime][j_prime][k][t + 1]
 
             # Checking condition
-            if res_y >= res_y:
+            if res_y >= res_y_prime:
                 res_y = 0
-                res_x = 0
+                res_y_prime = 0
                 continue
             else:
                 return False
@@ -477,22 +477,45 @@ def check_all_constraints(
         EE: dict,
         C_max: int
 ):
-    if EQ_9(X) and \
-            EQ_11(X, Y) and \
-            EQ_12(Y, X) and \
-            EQ_15(Y) and \
-            EQ_16(Y) and \
-            EQ_17(EE, B, X) and \
-            EQ_18(F, S, Y) and \
-            EQ_19(S, B, Y) and \
-            EQ_20(S, B, Y) and \
-            EQ_21(S, F, Z) and \
-            EQ_22(S, F, Z) and \
-            EQ_23(F, S) and \
-            EQ_24(EE, B) and \
-            EQ_25(EE, C_max) and \
-            EQ_27(EE, B, X) and \
-            EQ_28(B, S):
+    const_err = {
+        0: 'EQ_9',
+        1: 'EQ_11',
+        2: 'EQ_12',
+        3: 'EQ_15',
+        4: 'EQ_16',
+        5: 'EQ_17',
+        6: 'EQ_18',
+        7: 'EQ_19',
+        8: 'EQ_20',
+        9: 'EQ_21',
+        10: 'EQ_22',
+        11: 'EQ_23',
+        12: 'EQ_24',
+        13: 'EQ_25',
+        14: 'EQ_27',
+        15: 'EQ_28'
+    }
+    constraints = [EQ_9(X),
+                   EQ_11(X, Y),
+                   EQ_12(Y, X),
+                   EQ_15(Y),
+                   EQ_16(Y),
+                   EQ_17(EE, B, X),
+                   EQ_18(F, S, Y),
+                   EQ_19(S, B, Y),
+                   EQ_20(S, B, Y),
+                   EQ_21(S, F, Z),
+                   EQ_22(S, F, Z),
+                   EQ_23(F, S),
+                   EQ_24(EE, B),
+                   EQ_25(EE, C_max),
+                   EQ_27(EE, B, X),
+                   EQ_28(B, S)]
+    if all(constraints):
         return True
-
-    return False
+    else:
+        list_exceptions = []
+        for i, cons in enumerate(constraints):
+            if not cons:
+                list_exceptions.append(const_err[i])
+        return list_exceptions, False
