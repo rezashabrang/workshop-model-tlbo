@@ -8,7 +8,7 @@ from collections import Counter
 
 sys.path.append(str(Path(__file__).parent.parent / 'MODEL'))
 from MODEL.model import (
-    n, S_i, m, p_k, r, Pt, St
+    n, S_i, m, p_k, r, Pt, St, trans, TB
 )
 
 
@@ -221,7 +221,8 @@ def generate_ini_X_Y(X, Y):
                                     restart_permanent = True
                                 rand_t = randint(1, p_k[rand_k_prime] + 1)
                                 if rand_t not in occupied_positions[rand_k]:
-                                    if rand_k in task_based_occ and not all(rand_t > val for val in occupied_positions[rand_k]):
+                                    if rand_k in task_based_occ and not all(
+                                            rand_t > val for val in occupied_positions[rand_k]):
                                         not_restart = False
                                         continue
                                     occupied_positions[rand_k].append(rand_t)
@@ -251,7 +252,8 @@ def generate_ini_X_Y(X, Y):
                         while True:
                             rand_t = randint(1, p_k[rand_k_prime] + 1)
                             if rand_t not in occupied_positions[rand_k]:
-                                if rand_k in task_based_occ and not all(rand_t > val for val in occupied_positions[rand_k]):
+                                if rand_k in task_based_occ and not all(
+                                        rand_t > val for val in occupied_positions[rand_k]):
                                     not_restart = False
                                     continue
                                 occupied_positions[rand_k].append(rand_t)
@@ -266,6 +268,103 @@ def generate_ini_X_Y(X, Y):
     return X, Y
 
 
+def generate_ini_B_EE_S_F(B: dict,
+                          EE: dict,
+                          S: dict,
+                          F: dict,
+                          X: dict,
+                          Y: dict,
+                          Z: dict
+                          ):
+    """
+    Generating time related parameters
+    :return:
+    """
+    global n
+    global S_i
+    global m
+    global p_k
+    # Operations that related times are calculated. FORMAT (i, j)
+    calculated_ops = []
+    calculated_places = []
+    N_operations = 0
+    for i in range(1, n + 1):
+        N_operations += S_i[i]
+    counter = 0
+    while True:
+        counter += 1
+        if counter > 10:
+            break
+        for i in range(1, n + 1):
+            for j in range(1, S_i[i] + 1):
+                if (i, j) in calculated_ops:
+                    continue
+                for k in range(1, m + 1):
+                    for k_prime in range(1, m + 1):
+                        for t in range(1, p_k[k] + 1):
+                            if Y[i][j][k][t] != 1:
+                                continue
+                            # if it is the first operation of a work
+                            # And in the first place of a machine then start calculating
+                            if j == 1 and t == 1 and (i, j) not in calculated_ops:
+                                # Start time: B & S
+                                B[i][j] = r[i]
+                                S[k][t] = r[i]
+
+                                # End time: E & F
+                                EE[i][j] = Pt[i][j][k] + St[i][j][k]
+                                F[k][t] = EE[i][j]
+
+                                # Appending calculated operation and place
+                                calculated_ops.append((i, j))
+                                calculated_places.append((k, t))
+
+                            # Operations in the first place of the machines
+                            elif t == 1 and (i, j - 1) in calculated_ops and (i, j) not in calculated_ops:
+                                # Start time
+                                B[i][j] = EE[i][j - 1] + trans[i][k][k_prime] + Z[k][t] * TB[k]
+                                S[k][t] = B[i][j]
+                                # End time
+                                EE[i][j] = Pt[i][j][k] + St[i][j][k]
+                                F[k][t] = EE[i][j]
+                                # Appending
+                                calculated_ops.append((i, j))
+                                calculated_places.append((k, t))
+
+                            # Second and above operations of a machine
+                            elif (i, j - 1) in calculated_ops and (k, t - 1) in calculated_places and (
+                                    i, j) not in calculated_ops:
+                                # Start time
+                                B[i][j] = EE[i][j - 1] + trans[i][k][k_prime] + Z[k][t] * TB[k]
+                                S[k][t] = B[i][j]
+                                # End time
+                                EE[i][j] = Pt[i][j][k] + St[i][j][k]
+                                F[k][t] = EE[i][j]
+                                # Appending
+                                calculated_ops.append((i, j))
+                                calculated_places.append((k, t))
+
+                            # First operations of a work not in first place of a machine
+                            elif j == 1 and (k, t - 1) in calculated_places and (i, j) not in calculated_ops:
+                                # Start time
+                                B[i][j] = F[k][t - 1] + trans[i][k][k_prime] + Z[k][t] * TB[k]
+                                S[k][t] = B[i][j]
+                                # End time
+                                EE[i][j] = Pt[i][j][k] + St[i][j][k]
+                                F[k][t] = EE[i][j]
+                                # Appending
+                                calculated_ops.append((i, j))
+                                calculated_places.append((k, t))
+        # print(f'ops= {calculated_ops}')
+        # print(f'places= {calculated_places}')
+
+        # If all operations are found then quit
+        if len(set(calculated_ops)) == N_operations:
+            break
+
+    return B, EE, S, F
+
+
 def generate_initial_randoms():
     """
     Generating random first solutions for X, Y, Z, B
@@ -277,9 +376,29 @@ def generate_initial_randoms():
     # Y = generate_ini_Y(empty_Y, X)
     X, Y = generate_ini_X_Y(empty_X, empty_Y)
     Z = generate_ini_Z(empty_Z)
-    B = generate_ini_B(empty_B, X, empty_EE)
-    EE = calculate_EE(X, empty_EE, B)
-    S = calculate_S(B, empty_S, Y)
-    F = calculate_F(empty_F, S, Y)
+    # B = generate_ini_B(empty_B, X, empty_EE)
+    # EE = calculate_EE(X, empty_EE, B)
+    # S = calculate_S(B, empty_S, Y)
+    # F = calculate_F(empty_F, S, Y)
+    # Y = {1: {1: {1: {1: 0, 2: 1, 3: 0}, 2: {1: 0, 2: 0, 3: 0}, 3: {1: 0, 2: 0, 3: 0}},
+    #          2: {1: {1: 0, 2: 0, 3: 1}, 2: {1: 0, 2: 0, 3: 0}, 3: {1: 0, 2: 0, 3: 0}},
+    #          3: {1: {1: 0, 2: 0, 3: 0}, 2: {1: 0, 2: 0, 3: 0}, 3: {1: 0, 2: 1, 3: 0}}},
+    #      2: {1: {1: {1: 0, 2: 0, 3: 0}, 2: {1: 0, 2: 0, 3: 0}, 3: {1: 1, 2: 0, 3: 0}},
+    #          2: {1: {1: 0, 2: 0, 3: 0}, 2: {1: 1, 2: 0, 3: 0}, 3: {1: 0, 2: 0, 3: 0}},
+    #          3: {1: {1: 0, 2: 0, 3: 0}, 2: {1: 0, 2: 1, 3: 0}, 3: {1: 0, 2: 0, 3: 0}}},
+    #      3: {1: {1: {1: 0, 2: 0, 3: 0}, 2: {1: 0, 2: 0, 3: 1}, 3: {1: 0, 2: 0, 3: 0}},
+    #          2: {1: {1: 1, 2: 0, 3: 0}, 2: {1: 0, 2: 0, 3: 0}, 3: {1: 0, 2: 0, 3: 0}},
+    #          3: {1: {1: 0, 2: 0, 3: 0}, 2: {1: 0, 2: 0, 3: 0}, 3: {1: 0, 2: 0, 3: 1}}}}
+
+    B, EE, S, F = generate_ini_B_EE_S_F(
+        empty_B,
+        empty_EE,
+        empty_S,
+        empty_F,
+        X,
+        Y,
+        Z
+    )
+
     C_max = calculate_c_max(EE)
     return X, Y, Z, B, EE, S, F, C_max

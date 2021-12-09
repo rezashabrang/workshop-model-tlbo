@@ -235,56 +235,56 @@ def EQ_16(Y: dict):
     return True
 
 
-def EQ_17(
-        EE: dict,
-        B: dict,
-        X: dict
-):
-    global Pt
-    global St
-    global n
-    global S_i
-    global m
-    sigma_term = 0
-    for i in range(1, n + 1):
-        for j in range(1, S_i[i] + 1):
-            for k in range(1, m + 1):
-                for k_prime in range(1, m + 1):
-                    sigma_term += (Pt[i][j][k] + St[i][j][k]) * X[i][j][k][k_prime]
-            if EE[i][j] == B[i][j] + sigma_term:
-                sigma_term = 0
-                continue
-            else:
-                return False
-
-    return True
-
-
-def EQ_18(
-        F: dict,
-        S: dict,
-        Y: dict
-):
-    global m
-    global p_k
-    global n
-    global S_i
-    global Pt
-    global St
-    sigma_term = 0
-    for k in range(1, m + 1):
-        for t in range(1, p_k[k] + 1):
-            for i in range(1, n + 1):
-                for j in range(1, S_i[i] + 1):
-                    for k_prime in range(1, m + 1):
-                        sigma_term += (Pt[i][j][k] + St[i][j][k]) * Y[i][j][k][t]
-            if F[k][t] == S[k][t] + sigma_term:
-                sigma_term = 0
-                continue
-            else:
-                return False
-
-    return True
+# def EQ_17(
+#         EE: dict,
+#         B: dict,
+#         X: dict
+# ):
+#     global Pt
+#     global St
+#     global n
+#     global S_i
+#     global m
+#     sigma_term = 0
+#     for i in range(1, n + 1):
+#         for j in range(1, S_i[i] + 1):
+#             for k in range(1, m + 1):
+#                 for k_prime in range(1, m + 1):
+#                     sigma_term += (Pt[i][j][k] + St[i][j][k]) * X[i][j][k][k_prime]
+#             if EE[i][j] == B[i][j] + sigma_term:
+#                 sigma_term = 0
+#                 continue
+#             else:
+#                 return False
+#
+#     return True
+#
+#
+# def EQ_18(
+#         F: dict,
+#         S: dict,
+#         Y: dict
+# ):
+#     global m
+#     global p_k
+#     global n
+#     global S_i
+#     global Pt
+#     global St
+#     sigma_term = 0
+#     for k in range(1, m + 1):
+#         for t in range(1, p_k[k] + 1):
+#             for i in range(1, n + 1):
+#                 for j in range(1, S_i[i] + 1):
+#                     for k_prime in range(1, m + 1):
+#                         sigma_term += (Pt[i][j][k] + St[i][j][k]) * Y[i][j][k][t]
+#             if F[k][t] == S[k][t] + sigma_term:
+#                 sigma_term = 0
+#                 continue
+#             else:
+#                 return False
+#
+#     return True
 
 
 def EQ_19(
@@ -426,25 +426,28 @@ def EQ_25(
 #     if res_B >
 
 
-def EQ_27(
-        EE: dict,
-        B: dict,
-        X: dict
-):
-    global n
-    global S_i
-    global m
-    global trans
-    for i in range(1, n + 1):
-        for j in range(1, S_i[i]):
-            for k in range(1, m + 1):
-                for k_prime in range(1, m + 1):
-                    if EE[i][j] + trans[i][k][k_prime] <= B[i + 1][j] - Pt[i][j][k] + M * (1 - X[i][j][k][k_prime]):
-                        continue
-                    else:
-                        return False
-
-    return True
+# def EQ_27(
+#         EE: dict,
+#         B: dict,
+#         X: dict
+# ):
+#     try:
+#         global n
+#         global S_i
+#         global m
+#         global trans
+#         for i in range(1, n + 1):
+#             for j in range(1, S_i[i]):
+#                 for k in range(1, m + 1):
+#                     for k_prime in range(1, m + 1):
+#                         if EE[i][j] + trans[i][k][k_prime] <= B[i + 1][j] - Pt[i][j][k] + M * (1 - X[i][j][k][k_prime]):
+#                             continue
+#                         else:
+#                             return False
+#     except:
+#         return False
+#
+#     return True
 
 
 def EQ_28(
@@ -483,25 +486,25 @@ def check_all_constraints(
         2: 'EQ_12',
         3: 'EQ_15',
         4: 'EQ_16',
-        5: 'EQ_17',
-        6: 'EQ_18',
-        7: 'EQ_19',
-        8: 'EQ_20',
-        9: 'EQ_21',
-        10: 'EQ_22',
-        11: 'EQ_23',
-        12: 'EQ_24',
-        13: 'EQ_25',
-        14: 'EQ_27',
-        15: 'EQ_28'
+        # 5: 'EQ_17',
+        # 6: 'EQ_18',
+        5: 'EQ_19',
+        6: 'EQ_20',
+        7: 'EQ_21',
+        8: 'EQ_22',
+        9: 'EQ_23',
+        10: 'EQ_24',
+        11: 'EQ_25',
+        # 14: 'EQ_27',
+        12: 'EQ_28'
     }
     constraints = [EQ_9(X),
                    EQ_11(X, Y),
                    EQ_12(Y, X),
                    EQ_15(Y),
                    EQ_16(Y),
-                   EQ_17(EE, B, X),
-                   EQ_18(F, S, Y),
+                   # EQ_17(EE, B, X),
+                   # EQ_18(F, S, Y),
                    EQ_19(S, B, Y),
                    EQ_20(S, B, Y),
                    EQ_21(S, F, Z),
@@ -509,10 +512,10 @@ def check_all_constraints(
                    EQ_23(F, S),
                    EQ_24(EE, B),
                    EQ_25(EE, C_max),
-                   EQ_27(EE, B, X),
+                   # EQ_27(EE, B, X),
                    EQ_28(B, S)]
     if all(constraints):
-        return True
+        return True, True
     else:
         list_exceptions = []
         for i, cons in enumerate(constraints):
