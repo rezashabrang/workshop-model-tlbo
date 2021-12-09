@@ -14,12 +14,10 @@ for i in tqdm(range(10000)):
     list_exc, situation = check_all_constraints(X, Y, Z, B, S, F, EE, C_max)
     if situation == True:
         counter += 1
+        print('FOUND ONE')
         continue
     for item in list_exc:
         exceptions.append(item)
-    if situation:
-        print("PASHMAM Found an answer")
-        break
     # else:
         # print('GOING ON')
     # print('-------------- EE -------------- ')
@@ -28,6 +26,12 @@ for i in tqdm(range(10000)):
     # pprint(F)
     # print('------------- Y -------------- ')
     # pprint(Y)
+    # print('------------- EE -------------- ')
+    # pprint(EE)
+    # print('------------- S -------------- ')
+    # pprint(S)
+    # print('------------- F -------------- ')
+    # pprint(F)
 
 
 print(Counter(exceptions))

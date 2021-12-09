@@ -11,7 +11,7 @@ from formulas import (
 )
 
 # ------------- Global Parameters -------------
-P0 = 10  # General consumed energy per time unit
+P0 = 5  # General consumed energy per time unit
 n = 3  # Number of works
 
 # Dict of number of operations assigned to each work
@@ -235,56 +235,56 @@ def EQ_16(Y: dict):
     return True
 
 
-# def EQ_17(
-#         EE: dict,
-#         B: dict,
-#         X: dict
-# ):
-#     global Pt
-#     global St
-#     global n
-#     global S_i
-#     global m
-#     sigma_term = 0
-#     for i in range(1, n + 1):
-#         for j in range(1, S_i[i] + 1):
-#             for k in range(1, m + 1):
-#                 for k_prime in range(1, m + 1):
-#                     sigma_term += (Pt[i][j][k] + St[i][j][k]) * X[i][j][k][k_prime]
-#             if EE[i][j] == B[i][j] + sigma_term:
-#                 sigma_term = 0
-#                 continue
-#             else:
-#                 return False
-#
-#     return True
-#
-#
-# def EQ_18(
-#         F: dict,
-#         S: dict,
-#         Y: dict
-# ):
-#     global m
-#     global p_k
-#     global n
-#     global S_i
-#     global Pt
-#     global St
-#     sigma_term = 0
-#     for k in range(1, m + 1):
-#         for t in range(1, p_k[k] + 1):
-#             for i in range(1, n + 1):
-#                 for j in range(1, S_i[i] + 1):
-#                     for k_prime in range(1, m + 1):
-#                         sigma_term += (Pt[i][j][k] + St[i][j][k]) * Y[i][j][k][t]
-#             if F[k][t] == S[k][t] + sigma_term:
-#                 sigma_term = 0
-#                 continue
-#             else:
-#                 return False
-#
-#     return True
+def EQ_17(
+        EE: dict,
+        B: dict,
+        X: dict
+):
+    global Pt
+    global St
+    global n
+    global S_i
+    global m
+    sigma_term = 0
+    for i in range(1, n + 1):
+        for j in range(1, S_i[i] + 1):
+            for k in range(1, m + 1):
+                for k_prime in range(1, m + 1):
+                    sigma_term += (Pt[i][j][k] + St[i][j][k]) * X[i][j][k][k_prime]
+            if EE[i][j] == B[i][j] + sigma_term:
+                sigma_term = 0
+                continue
+            else:
+                return False
+
+    return True
+
+
+def EQ_18(
+        F: dict,
+        S: dict,
+        Y: dict
+):
+    global m
+    global p_k
+    global n
+    global S_i
+    global Pt
+    global St
+    sigma_term = 0
+    for k in range(1, m + 1):
+        for t in range(1, p_k[k] + 1):
+            for i in range(1, n + 1):
+                for j in range(1, S_i[i] + 1):
+                    for k_prime in range(1, m + 1):
+                        sigma_term += (Pt[i][j][k] + St[i][j][k]) * Y[i][j][k][t]
+            if F[k][t] == S[k][t] + sigma_term:
+                sigma_term = 0
+                continue
+            else:
+                return False
+
+    return True
 
 
 def EQ_19(
@@ -470,6 +470,24 @@ def EQ_28(
     return True
 
 
+def new_nest_dict(m):
+    for val in m.values():
+        if isinstance(val, dict):
+            yield from new_nest_dict(val)
+        else:
+            yield val
+
+
+def B_checking(B):
+    """Checking that all B values are not 0"""
+    B_vals = list(new_nest_dict(B))
+    for val in B_vals:
+        if val == 0:
+            return False
+
+    return True
+
+
 def check_all_constraints(
         X: dict,
         Y: dict,
@@ -487,7 +505,7 @@ def check_all_constraints(
         3: 'EQ_15',
         4: 'EQ_16',
         # 5: 'EQ_17',
-        # 6: 'EQ_18',
+        # 5: 'EQ_18',
         5: 'EQ_19',
         6: 'EQ_20',
         7: 'EQ_21',
@@ -496,7 +514,8 @@ def check_all_constraints(
         10: 'EQ_24',
         11: 'EQ_25',
         # 14: 'EQ_27',
-        12: 'EQ_28'
+        12: 'EQ_28',
+        13: "B_NULL"
     }
     constraints = [EQ_9(X),
                    EQ_11(X, Y),
@@ -513,7 +532,9 @@ def check_all_constraints(
                    EQ_24(EE, B),
                    EQ_25(EE, C_max),
                    # EQ_27(EE, B, X),
-                   EQ_28(B, S)]
+                   EQ_28(B, S),
+                   B_checking(B)
+                   ]
     if all(constraints):
         return True, True
     else:

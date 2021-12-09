@@ -8,7 +8,7 @@ from collections import Counter
 
 sys.path.append(str(Path(__file__).parent.parent / 'MODEL'))
 from MODEL.model import (
-    n, S_i, m, p_k, r, Pt, St, trans, TB
+    n, S_i, m, p_k, r, Pt, St, trans, TB, O
 )
 
 
@@ -268,14 +268,14 @@ def generate_ini_X_Y(X, Y):
     return X, Y
 
 
-def generate_ini_B_EE_S_F(B: dict,
-                          EE: dict,
-                          S: dict,
-                          F: dict,
-                          X: dict,
-                          Y: dict,
-                          Z: dict
-                          ):
+def generate_ini_B_EE_S_F_Z(B: dict,
+                            EE: dict,
+                            S: dict,
+                            F: dict,
+                            X: dict,
+                            Y: dict,
+                            Z: dict
+                            ):
     """
     Generating time related parameters
     :return:
@@ -293,7 +293,7 @@ def generate_ini_B_EE_S_F(B: dict,
     counter = 0
     while True:
         counter += 1
-        if counter > 10:
+        if counter > 50:
             break
         for i in range(1, n + 1):
             for j in range(1, S_i[i] + 1):
@@ -312,7 +312,7 @@ def generate_ini_B_EE_S_F(B: dict,
                                 S[k][t] = r[i]
 
                                 # End time: E & F
-                                EE[i][j] = Pt[i][j][k] + St[i][j][k]
+                                EE[i][j] = B[i][j] + Pt[i][j][k] + St[i][j][k]
                                 F[k][t] = EE[i][j]
 
                                 # Appending calculated operation and place
@@ -322,10 +322,10 @@ def generate_ini_B_EE_S_F(B: dict,
                             # Operations in the first place of the machines
                             elif t == 1 and (i, j - 1) in calculated_ops and (i, j) not in calculated_ops:
                                 # Start time
-                                B[i][j] = EE[i][j - 1] + trans[i][k][k_prime] + Z[k][t] * TB[k]
+                                B[i][j] = EE[i][j - 1] + trans[i][k][k_prime]
                                 S[k][t] = B[i][j]
                                 # End time
-                                EE[i][j] = Pt[i][j][k] + St[i][j][k]
+                                EE[i][j] = B[i][j] + Pt[i][j][k] + St[i][j][k]
                                 F[k][t] = EE[i][j]
                                 # Appending
                                 calculated_ops.append((i, j))
@@ -335,10 +335,17 @@ def generate_ini_B_EE_S_F(B: dict,
                             elif (i, j - 1) in calculated_ops and (k, t - 1) in calculated_places and (
                                     i, j) not in calculated_ops:
                                 # Start time
-                                B[i][j] = EE[i][j - 1] + trans[i][k][k_prime] + Z[k][t] * TB[k]
+                                B[i][j] = EE[i][j - 1] + trans[i][k][k_prime]
                                 S[k][t] = B[i][j]
+
+                                # ON/OFF scenario
+                                if S[k][t] - F[k][t - 1] > O[k]:
+                                    B[i][j] = max(B[i][j], F[k][t - 1] + TB[k])
+                                    S[k][t] = B[i][j]
+                                    Z[k][t - 1] = 1
+
                                 # End time
-                                EE[i][j] = Pt[i][j][k] + St[i][j][k]
+                                EE[i][j] = B[i][j] + Pt[i][j][k] + St[i][j][k]
                                 F[k][t] = EE[i][j]
                                 # Appending
                                 calculated_ops.append((i, j))
@@ -347,22 +354,25 @@ def generate_ini_B_EE_S_F(B: dict,
                             # First operations of a work not in first place of a machine
                             elif j == 1 and (k, t - 1) in calculated_places and (i, j) not in calculated_ops:
                                 # Start time
-                                B[i][j] = F[k][t - 1] + trans[i][k][k_prime] + Z[k][t] * TB[k]
+                                B[i][j] = F[k][t - 1] + trans[i][k][k_prime]
                                 S[k][t] = B[i][j]
+
+                                # ON/OFF scenario
+                                if S[k][t] - F[k][t - 1] > O[k]:
+                                    B[i][j] = max(B[i][j], F[k][t - 1] + TB[k])
+                                    S[k][t] = B[i][j]
+                                    Z[k][t - 1] = 1
                                 # End time
-                                EE[i][j] = Pt[i][j][k] + St[i][j][k]
+                                EE[i][j] = B[i][j] + Pt[i][j][k] + St[i][j][k]
                                 F[k][t] = EE[i][j]
                                 # Appending
                                 calculated_ops.append((i, j))
                                 calculated_places.append((k, t))
-        # print(f'ops= {calculated_ops}')
-        # print(f'places= {calculated_places}')
 
-        # If all operations are found then quit
         if len(set(calculated_ops)) == N_operations:
             break
 
-    return B, EE, S, F
+    return B, EE, S, F, Z
 
 
 def generate_initial_randoms():
@@ -372,33 +382,15 @@ def generate_initial_randoms():
     :return:
     """
     empty_X, empty_Y, empty_Z, empty_B, empty_S, empty_F, empty_EE = generate_empties()
-    # X = generate_ini_X(empty_X)
-    # Y = generate_ini_Y(empty_Y, X)
     X, Y = generate_ini_X_Y(empty_X, empty_Y)
-    Z = generate_ini_Z(empty_Z)
-    # B = generate_ini_B(empty_B, X, empty_EE)
-    # EE = calculate_EE(X, empty_EE, B)
-    # S = calculate_S(B, empty_S, Y)
-    # F = calculate_F(empty_F, S, Y)
-    # Y = {1: {1: {1: {1: 0, 2: 1, 3: 0}, 2: {1: 0, 2: 0, 3: 0}, 3: {1: 0, 2: 0, 3: 0}},
-    #          2: {1: {1: 0, 2: 0, 3: 1}, 2: {1: 0, 2: 0, 3: 0}, 3: {1: 0, 2: 0, 3: 0}},
-    #          3: {1: {1: 0, 2: 0, 3: 0}, 2: {1: 0, 2: 0, 3: 0}, 3: {1: 0, 2: 1, 3: 0}}},
-    #      2: {1: {1: {1: 0, 2: 0, 3: 0}, 2: {1: 0, 2: 0, 3: 0}, 3: {1: 1, 2: 0, 3: 0}},
-    #          2: {1: {1: 0, 2: 0, 3: 0}, 2: {1: 1, 2: 0, 3: 0}, 3: {1: 0, 2: 0, 3: 0}},
-    #          3: {1: {1: 0, 2: 0, 3: 0}, 2: {1: 0, 2: 1, 3: 0}, 3: {1: 0, 2: 0, 3: 0}}},
-    #      3: {1: {1: {1: 0, 2: 0, 3: 0}, 2: {1: 0, 2: 0, 3: 1}, 3: {1: 0, 2: 0, 3: 0}},
-    #          2: {1: {1: 1, 2: 0, 3: 0}, 2: {1: 0, 2: 0, 3: 0}, 3: {1: 0, 2: 0, 3: 0}},
-    #          3: {1: {1: 0, 2: 0, 3: 0}, 2: {1: 0, 2: 0, 3: 0}, 3: {1: 0, 2: 0, 3: 1}}}}
-
-    B, EE, S, F = generate_ini_B_EE_S_F(
+    B, EE, S, F, Z = generate_ini_B_EE_S_F_Z(
         empty_B,
         empty_EE,
         empty_S,
         empty_F,
         X,
         Y,
-        Z
+        empty_Z
     )
-
     C_max = calculate_c_max(EE)
     return X, Y, Z, B, EE, S, F, C_max

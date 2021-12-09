@@ -131,3 +131,5 @@ dmypy.json
 # Project Custom ignores
 .idea/
 sandbox/
+/MODEL/temp_trash.py
+/MODEL/TEC_TEs.py
