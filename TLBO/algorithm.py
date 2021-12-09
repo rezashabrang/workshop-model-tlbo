@@ -39,8 +39,8 @@ class Student:
 # --------------------- START OF TLBO ---------------------
 
 # ------------------------ Initialization ------------------------
-n = 2  # Number of students
-n_iter = 1  # Number of iterations
+n = 5  # Number of students
+n_iter = 20  # Number of iterations
 FBest = sys.float_info.max  # Setting max number possible
 C_max = 0  # End of the all works
 X, Y, Z, B, S, F, EE = generate_empties()
@@ -70,7 +70,7 @@ for iteration in tqdm(range(n_iter), desc='Main Loop'):
         VAR_Teacher = VAR_Best
         FTeacher = FBest
         TF = random.randint(1, 3)
-        TF_rand = 0.9 if TF == 3 else 0.6
+        TF_rand = 0.9 if TF == 2 else 0.6
         vars_new = generate_new_sol(
             VARS_ST=classroom[i].VARS,
             VARS_T=VAR_Teacher,
