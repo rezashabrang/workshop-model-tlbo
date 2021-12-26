@@ -31,14 +31,12 @@ def create_energy_cost_matrix(
     """
     # TODO change the counter variable to a uniform dist
     P_i_j_k = {}
-    counter = 1
     for i in range(1, n + 1):
         P_i_j_k[i] = {}
         for j in range(1, S_i[i] + 1):
             P_i_j_k[i][j] = {}
             for k in range(1, p_k[j] + 1):
-                P_i_j_k[i][j][k] = counter
-                counter += 1
+                P_i_j_k[i][j][k] = randint(3, 6)
     return P_i_j_k
 
 
