@@ -5,7 +5,7 @@ sys.path.append(str(Path(__file__).parent.parent / 'MODEL'))
 sys.path.append(str(Path(__file__).parent.parent / 'TLBO'))
 
 from TLBO.algorithm import Student
-from MODEL.model import TEC, n, S_i, m, p_k
+from MODEL.model import TEC, n, S_i, m, p_k, check_all_constraints
 from genom_helper import decode_genome, encode_genome
 
 
@@ -15,6 +15,7 @@ class Genome(Student):
         super(Genome, self).__init__()
         self.flatted_X = []
         self.flatted_Y = []
+        self.decode()
 
     def tec(self):
         new_fitness = TEC(
@@ -44,3 +45,10 @@ class Genome(Student):
             self.flatted_Y
         )
         return p_X, p_Y
+
+    def check_constraints(self):
+        self.encode()
+        list_exc, check_res = check_all_constraints(
+
+        )
+
