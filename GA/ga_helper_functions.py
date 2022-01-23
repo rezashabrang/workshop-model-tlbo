@@ -26,7 +26,7 @@ def selection(
 
     # -------------------- Selection --------------------
     while len(list_selected) < n_selection:
-        random_index = randint(0, len(population) + 1)
+        random_index = randint(0, len(population) - 1)
         if random_index not in selected_indices:
             list_selected.append(population[random_index])
             selected_indices.append(random_index)
@@ -36,17 +36,20 @@ def selection(
 
 # crossover two parents to create two children
 def crossover(
-        p1: Genome,
-        p2: Genome
+        p1: list,
+        p2: list,
+        rate: float
 ):
+    if random() > rate:
+        return p1, p2
     # children are copies of parents by default
-    c1, c2 = p1.VARS(), p2.copy()
+    c1, c2 = p1.copy(), p2.copy()
     # select crossover point that is not on the end of the string
-    pt = randint(1, len(p1) - 2)
+    pt = randint(1, len(c1) - 2)
     # perform crossover
     c1 = p1[:pt] + p2[pt:]
     c2 = p2[:pt] + p1[pt:]
-    return [c1, c2]
+    return c1, c2
 
 
 def mutation(bitstring, r_mut):
