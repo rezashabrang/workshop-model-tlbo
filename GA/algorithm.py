@@ -5,11 +5,11 @@ from pprint import pprint
 
 if __name__ == "__main__":
     # ----------------- Globals -----------------
-    n_pop = 20  # Population size
-    n_selection = 10  # Selection size (children size)
-    crossover_rate = 0.1  # Rate of crossover
-    mutation_rate = 0.01  # Rate of mutation
-    n_iteration = 3  # Number of times to iterate overall
+    n_pop = 10  # Population size
+    n_selection = 6  # Selection size (children size)
+    crossover_rate = 0.8  # Rate of crossover
+    mutation_rate = 0.05  # Rate of mutation
+    n_iteration = 5  # Number of times to iterate overall
 
     # ----------------- Initializing population -----------------
     population = [Genome() for j in tqdm(range(n_pop), desc='Population generation')]  # Population initialization
@@ -64,7 +64,7 @@ if __name__ == "__main__":
                     temp_children.append(p2)
                     children.append(p2)
 
-        # Adding children to the population
+    # Adding children to the population
         population += children
 
         # Sorting based on fitness

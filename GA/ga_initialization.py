@@ -16,6 +16,8 @@ class Genome(Student):
         super(Genome, self).__init__()
         self.flatted_X = []
         self.flatted_Y = []
+        self.saved_X = self.VARS["X"]
+        self.saved_Y = self.VARS["Y"]
         self.tec()
         self.decode()
 
@@ -48,6 +50,7 @@ class Genome(Student):
         )
         self.VARS["X"] = p_X
         self.VARS["Y"] = p_Y
+
         return p_X, p_Y
 
     def check_constraints(self):
@@ -61,9 +64,15 @@ class Genome(Student):
             EE=self.VARS["EE"],
             C_max=self.VARS["C_max"],
         )
+        if not check_res:
+            self.VARS["X"] = self.saved_X
+            self.VARS["Y"] = self.saved_Y
+            self.decode()
         return check_res
 
     def generate_results(self):
+        self.saved_X = self.VARS["X"]
+        self.saved_Y = self.VARS["Y"]
         self.encode()
         dummy_X, dummy_Y, Z, B, S, F, EE = generate_empties()
         self.VARS["B"], self.VARS["EE"], self.VARS["S"], self.VARS["F"], self.VARS["Z"] = generate_ini_B_EE_S_F_Z(
